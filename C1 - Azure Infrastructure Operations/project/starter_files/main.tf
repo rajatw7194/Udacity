@@ -90,6 +90,7 @@ resource "azurerm_linux_virtual_machine" "main" {
   name                            = "${var.prefix}-vm"
   resource_group_name             = azurerm_resource_group.main.name
   location                        = azurerm_resource_group.main.location
+  source_image_id                 = var.packer_image_id
   size                            = "Standard_D2s_v3"
   admin_username                  = "${var.username}"
   admin_password                  = "${var.password}"
@@ -112,6 +113,13 @@ resource "azurerm_linux_virtual_machine" "main" {
   storage_account_type = "Standard_LRS"
   create_option        = "Empty"
   disk_size_gb         = "1"
+}
+  resource "azurerm_virtual_machine_data_disk_attachment" "data" {
+  virtual_machine_id = element(azurerm_linux_virtual_machine.main.*.id, count.index)
+  managed_disk_id    = element(azurerm_managed_disk.data.*.id, count.index)
+  lun                = 1
+  caching            = "None"
+  count              = var.vm_count
 }
   os_disk {
     storage_account_type = "Standard_LRS"
